@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chatbot</title>
+</head>
+<body>
+    <h1>AI Girl Friend</h1>
+    <form method="POST" action="/send_message">
+        <input type="text" name="human_input" placeholder="Enter your message ">
+        <select id="voiceSelect" name="voice_id" placeholder="选择声音 ">
+            <!-- 选项将通过JavaScript动态添加 -->
+
+        </select>
+        <button type="submit">Send</button>
+    </form>
+    <div id="response_message"></div>
+
+    <script>
+        const form = document.querySelector('form');
+        const responseMessage = document.getElementById('response_message');
+        let selectedVoiceId; // 用于保存用户选择的 voice_id
+
+        form.addEventListener('submit',function (e){
+            e.preventDefault();
+            // 在提交前获取当前选中的 voice_id
+            selectedVoiceId = voiceSelect.value;
+            const formData = new FormData(form);
+            fetch('/send_message',{
+                method:'POST',
+                body: formData
+            })
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('voiceSelect').value = selectedVoiceId;
+                    responseMessage.innerHTML = data;
+                });
+            form.reset();
+        });
+
+        function fetchVoices() {
+            fetch('/get_voices')  // 调用你的后端路由
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                const voiceSelect = document.getElementById('voiceSelect');
+                data.voices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.voice_id; // 假设后端返回的结构与直接调用API相同
+                    option.textContent = voice.name; // 同上
+                    voiceSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching voices:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchVoices);
+
+
+
+    </script>
+</body>
+</html>
